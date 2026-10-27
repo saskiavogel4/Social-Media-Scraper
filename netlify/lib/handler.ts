@@ -48,17 +48,19 @@ export function createHandler(
 
       const ip = clientIp(req, context);
 
-      // Brute-force protection for the shared password.
+      // Stops one IP from hammering the token check with invalid tokens.
       if ((await peek("auth-fail", ip)) >= AUTH_FAILURE_LIMIT_PER_HOUR) return apiError("rate_limited");
 
-      const auth = checkAuth(req);
+      const auth = await checkAuth(req);
       if (!auth.ok) {
         if (auth.code === "unauthorized") await consume("auth-fail", ip, Number.MAX_SAFE_INTEGER);
         return apiError(auth.code);
       }
 
+      // Search and credit limits apply per signed-in account.
+      const who = `user:${auth.userId}`;
       if (rateLimited) {
-        const result = await consume("api", ip, limitFromEnv());
+        const result = await consume("api", who, limitFromEnv());
         if (!result.allowed) {
           return apiError("rate_limited", undefined, { "retry-after": String(result.retryAfterSec) });
         }
@@ -69,7 +71,7 @@ export function createHandler(
       const sc = () => {
         client ??= createScFetch(process.env.SCRAPE_CREATORS_API_KEY ?? "", {
           cache: getCache("sc-cache"),
-          beforeUpstream: rateLimited ? () => spendCall(ip) : undefined,
+          beforeUpstream: rateLimited ? () => spendCall(who) : undefined,
         });
         return client;
       };
@@ -81,8 +83,8 @@ export function createHandler(
   };
 }
 
-async function spendCall(ip: string): Promise<void> {
-  const result = await consume("calls", ip, callLimitFromEnv());
+async function spendCall(who: string): Promise<void> {
+  const result = await consume("calls", who, callLimitFromEnv());
   if (!result.allowed) throw new CallBudgetExceededError();
 }
 

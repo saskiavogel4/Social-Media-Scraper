@@ -1,10 +1,9 @@
 // HTTP contract between the browser and the Netlify Functions.
-// All endpoints are GET, require the `x-app-password` header (except /api/health),
-// and return either the documented body or an ApiErrorBody with a non-2xx status.
+// All endpoints are GET, require `Authorization: Bearer <Supabase access token>` for a
+// signed-in user (except /api/health), and return either the documented body or an
+// ApiErrorBody with a non-2xx status.
 
 import type { Platform, Video } from "./types.ts";
-
-export const PASSWORD_HEADER = "x-app-password";
 
 export type PlatformChoice = Platform | "all";
 export const TIME_WINDOWS = ["24h", "7d", "30d", "any"] as const;
@@ -62,7 +61,7 @@ export interface TranscriptResponse {
   transcript: string | null;
 }
 
-/** GET /api/session — returns 200 { ok: true } if the password header is correct, else 401. */
+/** GET /api/session — returns 200 { ok: true } if the access token belongs to a signed-in user, else 401. */
 export interface SessionResponse {
   ok: true;
 }

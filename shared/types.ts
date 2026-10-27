@@ -21,5 +21,4 @@ export interface Video {
 export interface HealthResponse {
   ok: boolean;
   apiKeyConfigured: boolean;
-  passwordConfigured: boolean;
 }

@@ -35,7 +35,7 @@ Creators lose hours scrolling TikTok, Instagram and YouTube to find out what's w
 
 **Primary persona: "the solo creator."** Someone running one or two creator accounts (for example a fitness coach, a travel creator or a small-business owner) who posts short-form video several times a week and wants fresh, proven ideas fast. They aren't technical. The app must work without any setup on their side.
 
-v1 is used mainly by the owner and a small trusted group, behind a shared access password (see §8.3).
+People create their own account with an email address and password (see §8.3).
 
 ## 5. User stories
 
@@ -135,7 +135,7 @@ interface Video {
 - When the API returns `402`, a friendly "Out of credits" message is shown.
 
 ### 8.3 Access control
-- v1 uses a single shared access password set as the Netlify environment variable `APP_ACCESS_PASSWORD` and checked by the functions, so strangers who find the URL can't use up credits.
+- Users sign up and sign in with email + password via Supabase Auth (email confirmation on by default). Every `/api/*` request carries the user's Supabase access token, which the functions verify with Supabase before calling Scrape Creators. Search and credit limits apply per account.
 
 ### 8.4 Compliance
 - Only public data is shown. The app links to the original posts and does not rehost or download videos.
@@ -185,7 +185,7 @@ Scrape Creators API (api.scrapecreators.com)
 ## 12. Open questions
 1. Which time-window filters does each Scrape Creators search endpoint actually support? (To verify in M3.)
 2. Should "All platforms" mode be the default, given it costs about 3× the credits?
-3. Is the shared password enough for v1, or is per-user login needed sooner?
+3. ~~Is the shared password enough for v1?~~ Replaced by per-user email + password accounts (Supabase Auth).
 4. What's the monthly credit budget? This decides the cache lengths and rate limits.
 
 ## 13. Future ideas (post-v1)

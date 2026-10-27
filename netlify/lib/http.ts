@@ -44,7 +44,7 @@ export function apiError(code: ApiErrorCode, message?: string, headers: Record<s
 /** Defence in depth: strip secrets from anything we log. */
 export function redact(text: string, env: NodeJS.ProcessEnv = process.env): string {
   let out = text;
-  for (const secret of [env.SCRAPE_CREATORS_API_KEY, env.APP_ACCESS_PASSWORD]) {
+  for (const secret of [env.SCRAPE_CREATORS_API_KEY]) {
     if (secret && secret.length >= 4) out = out.split(secret).join("[redacted]");
   }
   return out.slice(0, 500);

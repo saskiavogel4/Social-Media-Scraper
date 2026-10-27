@@ -25,6 +25,16 @@ const adapterMocks = vi.hoisted(() => {
 
 vi.mock("./adapters/index.ts", () => ({ adapters: adapterMocks }));
 
+// Supabase token checks are unit-tested in auth.test.ts; here "Bearer good:<userId>" is a
+// signed-in user and anything else is rejected.
+vi.mock("./auth.ts", () => ({
+  checkAuth: vi.fn(async (req: Request) => {
+    if (!process.env.SCRAPE_CREATORS_API_KEY) return { ok: false, code: "server_misconfigured" };
+    const m = /^Bearer good:(\S+)$/.exec(req.headers.get("authorization") ?? "");
+    return m ? { ok: true, userId: m[1] } : { ok: false, code: "unauthorized" };
+  }),
+}));
+
 vi.mock("../../shared/scoring.ts", () => ({
   dedupeVideos: vi.fn((videos: Video[]) => videos.filter((v, i) => videos.findIndex((w) => w.id === v.id) === i)),
   filterVideos: vi.fn((videos: Video[], opts: { minViews: number }) =>
@@ -44,10 +54,10 @@ const { default: profileNiche } = await import("../functions/profile-niche.ts");
 const { default: transcript } = await import("../functions/transcript.ts");
 const scoring = await import("../../shared/scoring.ts");
 
-const PASSWORD = "correct horse";
 const API_KEY = "sk_live_TOP_SECRET_KEY";
 let ipCounter = 0;
 let ip = "";
+let token = "";
 
 function video(id: string, platform: Platform, views: number): Video {
   return {
@@ -66,11 +76,11 @@ function video(id: string, platform: Platform, views: number): Video {
 function call(
   handler: (req: Request, ctx: Context) => Promise<Response>,
   path: string,
-  init: { password?: string | null; method?: string; ip?: string } = {},
+  init: { token?: string | null; method?: string; ip?: string } = {},
 ) {
   const headers: Record<string, string> = {};
-  const password = init.password === undefined ? PASSWORD : init.password;
-  if (password !== null) headers["x-app-password"] = password;
+  const t = init.token === undefined ? token : init.token;
+  if (t !== null) headers.authorization = `Bearer ${t}`;
   const req = new Request(`https://trendscout.example${path}`, { method: init.method ?? "GET", headers });
   return handler(req, { ip: init.ip ?? ip } as Context);
 }
@@ -78,10 +88,10 @@ function call(
 const adapters = adapterMocks as unknown as Record<Platform, { [K in keyof PlatformAdapter]: ReturnType<typeof vi.fn> }>;
 
 beforeEach(() => {
-  vi.stubEnv("APP_ACCESS_PASSWORD", PASSWORD);
   vi.stubEnv("SCRAPE_CREATORS_API_KEY", API_KEY);
   vi.stubEnv("RATE_LIMIT_PER_HOUR", "");
   ip = `10.0.0.${++ipCounter}`;
+  token = `good:user-${ipCounter}`;
   vi.spyOn(console, "warn").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
   for (const a of Object.values(adapters)) for (const fn of [a.trending, a.search, a.profile, a.transcript]) fn.mockReset();
@@ -98,34 +108,30 @@ afterEach(() => {
 async function expectNoSecrets(res: Response) {
   const text = await res.clone().text();
   expect(text).not.toContain(API_KEY);
-  expect(text).not.toContain(PASSWORD);
 }
 
 describe("auth and method", () => {
-  it("session returns ok with the right password", async () => {
+  it("session returns ok for a signed-in user", async () => {
     const res = await call(session, "/api/session");
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
     expect(res.headers.get("cache-control")).toBe("no-store");
   });
 
-  it("401 with a wrong or missing password", async () => {
-    for (const password of ["nope", null]) {
-      const res = await call(search, "/api/search?platform=tiktok&q=x", { password });
+  it("401 with an invalid or missing token", async () => {
+    for (const t of ["nope", null]) {
+      const res = await call(search, "/api/search?platform=tiktok&q=x", { token: t });
       expect(res.status).toBe(401);
       expect((await res.json()).error.code).toBe("unauthorized");
     }
     expect(adapters.tiktok.search).not.toHaveBeenCalled();
   });
 
-  it("500 server_misconfigured when secrets are missing", async () => {
+  it("500 server_misconfigured when the API key is missing", async () => {
     vi.stubEnv("SCRAPE_CREATORS_API_KEY", "");
     const res = await call(session, "/api/session");
     expect(res.status).toBe(500);
     expect((await res.json()).error.code).toBe("server_misconfigured");
-    vi.stubEnv("SCRAPE_CREATORS_API_KEY", API_KEY);
-    vi.stubEnv("APP_ACCESS_PASSWORD", "");
-    expect((await call(trending, "/api/trending?platform=all")).status).toBe(500);
   });
 
   it("405 for non-GET methods", async () => {
@@ -134,8 +140,8 @@ describe("auth and method", () => {
     expect(res.headers.get("allow")).toBe("GET");
   });
 
-  it("locks out an IP after too many wrong passwords", async () => {
-    for (let i = 0; i < 20; i++) expect((await call(session, "/api/session", { password: `bad${i}` })).status).toBe(401);
+  it("locks out an IP after too many invalid tokens", async () => {
+    for (let i = 0; i < 20; i++) expect((await call(session, "/api/session", { token: `bad${i}` })).status).toBe(401);
     const res = await call(session, "/api/session");
     expect(res.status).toBe(429);
   });
@@ -156,8 +162,8 @@ describe("rate limiting", () => {
     expect(res.headers.get("retry-after")).toMatch(/^\d+$/);
     expect((await res.json()).error.code).toBe("rate_limited");
     expect(adapters.tiktok.trending).toHaveBeenCalledTimes(2);
-    // A different IP is unaffected; session/health is not rate limited.
-    expect((await call(trending, "/api/trending?platform=tiktok", { ip: "192.0.2.1" })).status).toBe(200);
+    // Limits are per account: another user (even on the same IP) is unaffected; session is not rate limited.
+    expect((await call(trending, "/api/trending?platform=tiktok", { token: "good:someone-else" })).status).toBe(200);
     expect((await call(session, "/api/session")).status).toBe(200);
   });
 });

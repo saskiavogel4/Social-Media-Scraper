@@ -6,7 +6,6 @@ export default async (): Promise<Response> => {
   const body: HealthResponse = {
     ok: true,
     apiKeyConfigured: Boolean(process.env.SCRAPE_CREATORS_API_KEY),
-    passwordConfigured: Boolean(process.env.APP_ACCESS_PASSWORD),
   };
   return Response.json(body, { headers: { "cache-control": "no-store" } });
 };
