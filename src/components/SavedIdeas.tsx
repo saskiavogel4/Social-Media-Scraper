@@ -16,7 +16,7 @@ export function SavedIdeas({ saved, onOpen, onGoSearch }: SavedIdeasProps) {
 
   const exportCsv = () => {
     const date = new Date().toISOString().slice(0, 10);
-    downloadCsv(`nextsociapost-saved-${date}.csv`, videosToCsv(saved.saved));
+    downloadCsv(`nextsocialpost-saved-${date}.csv`, videosToCsv(saved.saved));
   };
 
   return (

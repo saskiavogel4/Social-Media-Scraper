@@ -1,4 +1,4 @@
-// Smoke tests for the main NextSociaPost flows against the production build.
+// Smoke tests for the main NextSocialPost flows against the production build.
 // All /api/** responses are mocked (see fixtures.ts); the Scrape Creators API is never called.
 import { readFile } from "node:fs/promises";
 import type { ProfileNicheResponse, TranscriptResponse, VideosResponse } from "../shared/api.ts";
@@ -164,7 +164,7 @@ test("saving a video shows it in Saved ideas and exports CSV", async ({ page, ap
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export CSV" }).click();
   const download = await downloadPromise;
-  expect(download.suggestedFilename()).toMatch(/^nextsociapost-saved-\d{4}-\d{2}-\d{2}\.csv$/);
+  expect(download.suggestedFilename()).toMatch(/^nextsocialpost-saved-\d{4}-\d{2}-\d{2}\.csv$/);
   const csv = (await readFile(await download.path(), "utf8")).replace(/^\uFEFF/, "");
   const lines = csv.trim().split("\r\n");
   expect(lines[0]).toBe("platform,url,caption,handle,views,likes,comments,shares,trendScore,postedAt");

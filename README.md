@@ -1,4 +1,4 @@
-# NextSociaPost
+# NextSocialPost
 
 Find trending TikToks, Instagram Reels and YouTube Shorts that fit your niche, powered by the [Scrape Creators API](https://docs.scrapecreators.com).
 
