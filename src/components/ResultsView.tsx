@@ -125,7 +125,10 @@ export function ResultsView({ state, saved, onOpen, onRetry }: ResultsViewProps)
         <div className="mb-4">
           <Notice
             tone="warning"
-            title={count > 0 ? "Some platforms couldn't be searched" : "No platform could be searched"}
+            title={
+              // A 200 response always has at least one platform that succeeded (if all fail, the API returns an error).
+              count > 0 ? "Some platforms couldn't be searched" : "Some platforms couldn't be searched, and the rest found no matches"
+            }
             onDismiss={() => setDismissed(state.data.errors)}
           >
             <ul className="list-disc space-y-0.5 pl-5">

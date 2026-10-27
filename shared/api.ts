@@ -10,6 +10,23 @@ export type PlatformChoice = Platform | "all";
 export const TIME_WINDOWS = ["24h", "7d", "30d", "any"] as const;
 export type TimeWindow = (typeof TIME_WINDOWS)[number];
 export const MAX_TERMS = 5;
+/** Longest search term (after trimming) the API accepts. */
+export const MAX_TERM_LENGTH = 60;
+/** Characters a search term may contain (the server rejects anything else). */
+export const TERM_CHARS = /^[\p{L}\p{M}\p{N} #_\-.']+$/u;
+const TERM_DISALLOWED = /[^\p{L}\p{M}\p{N} #_\-.']/gu;
+
+/**
+ * Makes user input safe to send as a search term: drops disallowed characters (emoji, &, / …),
+ * collapses whitespace, joins "# tag" into "#tag" and caps the length.
+ * Returns "" when nothing searchable is left.
+ */
+export function sanitizeTerm(raw: string): string {
+  let t = raw.replace(TERM_DISALLOWED, " ").trim().replace(/\s+/g, " ");
+  if (t.startsWith("#")) t = `#${t.slice(1).replace(/\s+/g, "")}`;
+  t = t.slice(0, MAX_TERM_LENGTH).trim();
+  return /[\p{L}\p{N}]/u.test(t) ? t : "";
+}
 
 export interface PlatformError {
   platform: Platform;

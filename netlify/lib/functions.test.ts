@@ -3,8 +3,8 @@
 import type { Context } from "@netlify/functions";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Platform, Video } from "../../shared/types.ts";
-import { ScrapeCreatorsError, type PlatformAdapter, type ScFetch } from "../lib/adapters/types.ts";
-import { resetMemoryCaches } from "../lib/cache.ts";
+import { ScrapeCreatorsError, type PlatformAdapter, type ScFetch } from "./adapters/types.ts";
+import { resetMemoryCaches } from "./cache.ts";
 
 vi.mock("@netlify/blobs", () => ({
   getStore: () => {
@@ -23,7 +23,7 @@ const adapterMocks = vi.hoisted(() => {
   return { tiktok: make("tiktok"), instagram: make("instagram"), youtube: make("youtube") };
 });
 
-vi.mock("../lib/adapters/index.ts", () => ({ adapters: adapterMocks }));
+vi.mock("./adapters/index.ts", () => ({ adapters: adapterMocks }));
 
 vi.mock("../../shared/scoring.ts", () => ({
   dedupeVideos: vi.fn((videos: Video[]) => videos.filter((v, i) => videos.findIndex((w) => w.id === v.id) === i)),
@@ -37,11 +37,11 @@ vi.mock("../../shared/niche.ts", () => ({
   extractNicheTerms: vi.fn(() => ["#fitness", "workout"]),
 }));
 
-const { default: session } = await import("./session.ts");
-const { default: search } = await import("./search.ts");
-const { default: trending } = await import("./trending.ts");
-const { default: profileNiche } = await import("./profile-niche.ts");
-const { default: transcript } = await import("./transcript.ts");
+const { default: session } = await import("../functions/session.ts");
+const { default: search } = await import("../functions/search.ts");
+const { default: trending } = await import("../functions/trending.ts");
+const { default: profileNiche } = await import("../functions/profile-niche.ts");
+const { default: transcript } = await import("../functions/transcript.ts");
 const scoring = await import("../../shared/scoring.ts");
 
 const PASSWORD = "correct horse";

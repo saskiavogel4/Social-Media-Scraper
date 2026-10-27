@@ -9,6 +9,24 @@
 [functions]
   node_bundler = "esbuild"
 
+# Security headers for the static site. The CSP only allows our own scripts, styles and
+# /api/* calls; thumbnails come from platform CDNs over https. e2e/smoke.spec.ts applies
+# this exact policy to the page, so a CSP change that breaks the app fails CI.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Vite's hashed build assets never change, so they can be cached forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 # Unknown /api/* paths get a JSON 404 instead of the SPA's index.html.
 # (Functions with a config.path run before redirects, so real endpoints are unaffected.)
 [[redirects]]

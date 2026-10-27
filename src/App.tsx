@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Video } from "../shared/types.ts";
+import { sanitizeTerm } from "../shared/api.ts";
 import { onUnauthorized } from "./api.ts";
 import { AppHeader, type View } from "./components/AppHeader.tsx";
 import { PasswordGate } from "./components/PasswordGate.tsx";
@@ -66,7 +67,9 @@ function MainApp({ onSignOut }: { onSignOut: () => void }) {
 
   const retry = (q: SearchQuery) => void search.run(q);
 
-  const searchHashtag = (tag: string, video: Video) => {
+  const searchHashtag = (rawTag: string, video: Video) => {
+    const tag = sanitizeTerm(rawTag);
+    if (!tag) return;
     setSelected(null);
     setView("search");
     setForm((f) => ({ ...f, platform: video.platform, mode: "niche", terms: [tag] }));

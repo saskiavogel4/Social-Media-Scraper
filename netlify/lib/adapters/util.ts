@@ -124,7 +124,7 @@ export function clockToSeconds(value: unknown): number | undefined {
     .reduce((total, part) => total * 60 + Number(part), 0);
 }
 
-const HASHTAG = /#([\p{L}\p{N}_]+)/gu;
+const HASHTAG = /#([\p{L}\p{M}\p{N}_]+)/gu;
 
 /** Lower-cased hashtags (without "#"), de-duplicated, from explicit lists and free text. */
 export function collectHashtags(explicit: unknown[], ...texts: (string | undefined)[]): string[] {

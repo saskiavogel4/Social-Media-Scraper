@@ -107,7 +107,7 @@ export function ProfilePanel({ platform, handle, onHandleChange, terms, onTermsC
           </Notice>
         )}
         {state.status === "success" && (
-          <p className="mb-3 text-sm text-slate-700 dark:text-slate-300">
+          <p className="mb-3 text-sm break-words text-slate-700 dark:text-slate-300">
             <span className="font-semibold">@{state.data.handle}</span>
             {state.data.followers !== undefined && <> · {formatCompact(state.data.followers)} followers</>}
             {" · "}based on {state.data.sampleSize} recent post{state.data.sampleSize === 1 ? "" : "s"}

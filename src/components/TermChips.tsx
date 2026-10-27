@@ -1,18 +1,13 @@
 import { useId, useRef, type ClipboardEvent, type KeyboardEvent } from "react";
+import { sanitizeTerm } from "../../shared/api.ts";
 import { CloseIcon } from "./icons.tsx";
 
-/** Trim, collapse whitespace, normalise "# tag" -> "#tag". */
-export function normaliseTerm(raw: string): string {
-  const t = raw.trim().replace(/\s+/g, " ");
-  return t.startsWith("#") ? `#${t.slice(1).trim().replace(/\s+/g, "")}` : t;
-}
-
-/** Adds terms (deduped, case-insensitive) up to `max`. */
+/** Adds terms (sanitised, deduped case-insensitively) up to `max`. */
 export function addTerms(existing: readonly string[], incoming: readonly string[], max: number): string[] {
   const out = [...existing];
   for (const raw of incoming) {
-    const t = normaliseTerm(raw);
-    if (!t || t === "#") continue;
+    const t = sanitizeTerm(raw);
+    if (!t) continue;
     if (out.some((x) => x.toLowerCase() === t.toLowerCase())) continue;
     if (out.length >= max) break;
     out.push(t);

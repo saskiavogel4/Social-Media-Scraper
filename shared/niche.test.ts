@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MAX_TERM_LENGTH } from "./api.ts";
 import type { Video } from "./types.ts";
 import { extractNicheTerms, isNoiseTag, termKey, termsFromPost } from "./niche.ts";
 
@@ -149,6 +150,15 @@ describe("extractNicheTerms", () => {
     expect(extractNicheTerms([post("#fyp #viral the and 🔥🔥 123", ["foryou"])])).toEqual([]);
     const broken = { ...post(""), caption: undefined, hashtags: undefined } as unknown as Video;
     expect(extractNicheTerms([broken])).toEqual([]);
+  });
+
+  it("never suggests a term longer than the search API accepts", () => {
+    const longTag = `#${"a".repeat(MAX_TERM_LENGTH)}`; // 61 chars with the "#"
+    const longWord = "b".repeat(MAX_TERM_LENGTH + 1);
+    const posts = [1, 2, 3].map(() => post(`${longTag} ${longWord} sourdough`, [longTag]));
+    const terms = extractNicheTerms(posts);
+    expect(terms).toEqual(["sourdough"]);
+    for (const t of terms) expect(t.length).toBeLessThanOrEqual(MAX_TERM_LENGTH);
   });
 
   it("is deterministic for the same input", () => {

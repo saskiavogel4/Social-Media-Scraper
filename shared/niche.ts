@@ -13,6 +13,7 @@
 // 4. When picking the top terms, a word already covered by a picked term is skipped
 //    (after "#mealprep", plain "meal" adds nothing).
 
+import { MAX_TERM_LENGTH } from "./api.ts";
 import type { Video } from "./types.ts";
 import {
   NICHE_BIGRAM_BOOST,
@@ -76,7 +77,7 @@ export function termKey(term: string): string {
   return k;
 }
 
-const HASHTAG_RE = /#([\p{L}\p{N}_]+)/gu;
+const HASHTAG_RE = /#([\p{L}\p{M}\p{N}_]+)/gu;
 const URL_RE = /\b(?:https?:\/\/|www\.)\S+/giu;
 const MENTION_RE = /@[\p{L}\p{N}_.]+/gu;
 const HAS_LETTER_RE = /\p{L}/u;
@@ -84,7 +85,7 @@ const HAS_LETTER_RE = /\p{L}/u;
 function normaliseHashtag(raw: string): string | undefined {
   const body = raw.trim().replace(/^#+/, "").toLowerCase();
   if (body.length < 2 || !HAS_LETTER_RE.test(body)) return undefined;
-  if (!/^[\p{L}\p{N}_]+$/u.test(body)) return undefined;
+  if (!/^[\p{L}\p{M}\p{N}_]+$/u.test(body)) return undefined;
   if (isNoiseTag(body)) return undefined;
   return `#${body}`;
 }
@@ -122,7 +123,7 @@ export function termsFromPost(video: Video): PostTerms {
   const text = caption
     .replace(URL_RE, " | ")
     .replace(MENTION_RE, " | ")
-    .replace(/#[\p{L}\p{N}_]+/gu, " | ")
+    .replace(/#[\p{L}\p{M}\p{N}_]+/gu, " | ")
     .replace(/['’]/g, "") // don't -> dont
     .replace(/-/g, " "); // meal-prep -> meal prep
 
@@ -176,6 +177,8 @@ export function extractNicheTerms(videos: Video[], max = 5): string[] {
   const candidates = new Map<string, Candidate>();
 
   const add = (form: string, postIndex: number, boost: number, isHashtag: boolean) => {
+    // A suggested term the search API would reject (too long) would fail the whole search.
+    if (form.length > MAX_TERM_LENGTH) return;
     const key = termKey(form);
     if (key.length < 2) return;
     let c = candidates.get(key);

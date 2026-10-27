@@ -1,7 +1,7 @@
 // Query-string validation for every /api/* endpoint (contract: shared/api.ts).
 // Unknown or repeated params are rejected. Error messages never echo user input.
 
-import { MAX_TERMS, TIME_WINDOWS, type PlatformChoice, type TimeWindow } from "../../shared/api.ts";
+import { MAX_TERM_LENGTH, MAX_TERMS, TERM_CHARS, TIME_WINDOWS, type PlatformChoice, type TimeWindow } from "../../shared/api.ts";
 import { PLATFORMS, type Platform } from "../../shared/types.ts";
 
 export class ValidationError extends Error {
@@ -11,11 +11,11 @@ export class ValidationError extends Error {
   }
 }
 
-export const MAX_TERM_LENGTH = 60;
+export { MAX_TERM_LENGTH };
 export const MAX_MIN_VIEWS = 10_000_000_000;
 export const MAX_URL_LENGTH = 2048;
 
-const TERM_CHARS = /^[\p{L}\p{M}\p{N} #_\-.']+$/u;
+// TERM_CHARS is shared with the browser (shared/api.ts) so both sides accept the same terms.
 const HAS_ALNUM = /[\p{L}\p{N}]/u;
 const HANDLE = /^[A-Za-z0-9._-]{1,64}$/;
 
