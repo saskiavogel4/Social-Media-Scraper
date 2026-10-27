@@ -1,4 +1,4 @@
-# Trend Scout
+# NextSociaPost
 
 Web app that finds trending short-form videos (TikTok, Instagram Reels, YouTube Shorts) that fit a creator's niche, using the Scrape Creators API. Deployed to Netlify from `main`.
 

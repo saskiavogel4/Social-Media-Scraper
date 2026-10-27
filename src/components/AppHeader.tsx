@@ -45,10 +45,10 @@ export function AppHeader({ view, onViewChange, savedCount, onSignOut }: AppHead
           type="button"
           onClick={() => onViewChange("search")}
           className={`flex shrink-0 items-center gap-2 rounded-lg ${focusRing}`}
-          aria-label="Trend Scout home"
+          aria-label="NextSociaPost home"
         >
           <Logo className="h-8 w-8" />
-          <span className="hidden text-lg font-bold tracking-tight text-slate-900 min-[480px]:inline dark:text-white">Trend Scout</span>
+          <span className="hidden text-lg font-bold tracking-tight text-slate-900 min-[480px]:inline dark:text-white">NextSociaPost</span>
         </button>
         <nav aria-label="Main" className="flex items-center gap-1">
           {tab("search", "Search")}

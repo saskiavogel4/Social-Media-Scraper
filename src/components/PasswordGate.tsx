@@ -40,7 +40,7 @@ export function PasswordGate({ onSuccess, expired }: PasswordGateProps) {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <Logo className="mx-auto h-12 w-12" />
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Trend Scout</h1>
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">NextSociaPost</h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400">Find trending TikToks, Reels and Shorts that fit your niche.</p>
         </div>
         <form

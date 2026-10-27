@@ -1,4 +1,4 @@
-# Product Requirements Document: Trend Scout
+# Product Requirements Document: NextSociaPost
 
 **Status:** Draft v1 · **Owner:** Saskia Vogel · **Last updated:** 2026-10-27
 
@@ -6,7 +6,7 @@
 
 ## 1. Summary
 
-Trend Scout is a web app that helps social media creators find **trending short-form videos that fit their own account**. The user picks a platform and gives the app their niche, their handle, or both. The app then uses the [Scrape Creators API](https://docs.scrapecreators.com) to find popular videos in that niche and shows them in a ranked grid with engagement stats, so the creator can quickly spot content ideas worth making their own version of.
+NextSociaPost is a web app that helps social media creators find **trending short-form videos that fit their own account**. The user picks a platform and gives the app their niche, their handle, or both. The app then uses the [Scrape Creators API](https://docs.scrapecreators.com) to find popular videos in that niche and shows them in a ranked grid with engagement stats, so the creator can quickly spot content ideas worth making their own version of.
 
 The app is built from this GitHub repository and deployed to **Netlify**. Every merge to `main` deploys to production.
 
