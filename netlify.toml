@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Single-page app: send unknown routes to index.html.
+# Functions declare their own /api/* paths, which take precedence.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
