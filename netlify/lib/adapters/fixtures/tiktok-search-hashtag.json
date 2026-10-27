@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "credits_remaining": 1000000,
+  "credits_charged": 1,
+  "aweme_list": [
+    {
+      "aweme_id": "6862153058223197445",
+      "desc": "To the 🐝 🐝 🐝  #fyp",
+      "create_time": 1597719521,
+      "create_time_utc": "2025-09-03T18:37:38.000Z",
+      "region": "US",
+      "url": "https://www.tiktok.com/@branttakes/video/7545933721589910798",
+      "share_url": "https://www.tiktok.com/@bellapoarch/video/6862153058223197445?_r=1&u_code=ed9f89mfgib3gh&preview_pb=0&sharer_language=en&_d=ed9f7j8g13e0e7&share_item_id=6862153058223197445&source=h5_m",
+      "statistics": {
+        "aweme_id": "6862153058223197445",
+        "comment_count": 2901351,
+        "digg_count": 68933772,
+        "play_count": 852942803,
+        "share_count": 42457977,
+        "collect_count": 4220877
+      },
+      "author": {
+        "uid": "6748458643983238149",
+        "unique_id": "bellapoarch",
+        "nickname": "Bella Poarch",
+        "follower_count": 0,
+        "avatar_thumb": {
+          "uri": "tos-useast5-avt-0068-tx/fee26c719fa9bcf3ae6cea42a4b5bdac",
+          "url_list": [
+            "https://p19.tiktokcdn-us.com/tos-useast5-avt-0068-tx/fee26c719fa9bcf3ae6cea42a4b5bdac~tplv-tiktokx-cropcenter-q:100:100:q75.webp?dr=8835&idc=useast5&nonce=8613&ps=87d6e48a&refresh_token=459959a60b875a2e18a4b2aa3faf6e3c&s=CHALLENGE_AWEME&sc=avatar&shcp=c0f880ed&shp=45126217&t=223449c4"
+          ]
+        },
+        "avatar_medium": {
+          "uri": "tos-useast5-avt-0068-tx/fee26c719fa9bcf3ae6cea42a4b5bdac",
+          "url_list": [
+            "https://p19.tiktokcdn-us.com/tos-useast5-avt-0068-tx/fee26c719fa9bcf3ae6cea42a4b5bdac~tplv-tiktokx-cropcenter-q:720:720:q75.webp?dr=8836&idc=useast5&nonce=56624&ps=87d6e48a&refresh_token=a77ee4b36b14a0c3bd50f0276f1baa85&s=CHALLENGE_AWEME&sc=avatar&shcp=c0f880ed&shp=45126217&t=223449c4"
+          ]
+        },
+        "sec_uid": "MS4wLjABAAAAIQGNoHByQvokcLbWCGnIfas0OV2nctsZnRFbN7eB04xt-9usrHe3UvXJRZLxBWlJ"
+      },
+      "video": {
+        "cover": {
+          "uri": "tos-maliva-p-0068/567504ab3e4648dea968213ce979f281",
+          "url_list": [
+            "https://p16-sign-va.tiktokcdn.com/tos-maliva-p-0068/567504ab3e4648dea968213ce979f281~tplv-tiktokx-origin.image?dr=8593&nonce=94168&refresh_token=e2822621e7d64eb95dc7e94e95764fa2&x-expires=1737835200&x-signature=SNIUNeUoSD8e%2F8Zv%2B9O8Xw3e054%3D&biz_tag=tt_video&idc=useast5&ps=933b5bde&s=CHALLENGE_AWEME&sc=cover&shcp=c0f880ed&shp=d05b14bd&t=bacd0480"
+          ],
+          "width": 720,
+          "height": 720
+        },
+        "origin_cover": {
+          "uri": "tos-maliva-p-0068/f5de6be77f5a4922acd52380d1f9d3bb_1597719526",
+          "url_list": [
+            "https://p16-sign-va.tiktokcdn.com/tos-maliva-p-0068/f5de6be77f5a4922acd52380d1f9d3bb_1597719526~tplv-dmt-adapt-360p.heic?dr=8597&nonce=65861&refresh_token=5a745d658cd8fc23c9647b6c1fde979d&x-expires=1737835200&x-signature=Y8M12OZwWP%2BrloIqHsCfa0OK6l0%3D&biz_tag=tt_video&idc=useast5&ps=d97f9a4f&s=CHALLENGE_AWEME&sc=cover&shcp=c0f880ed&shp=d05b14bd&t=bacd0480"
+          ],
+          "width": 720,
+          "height": 720
+        },
+        "dynamic_cover": {
+          "uri": "tos-maliva-p-0068/cbac911b3ff3473398dcfaceabb7b620_1597719522",
+          "url_list": [
+            "https://p16-sign-va.tiktokcdn.com/tos-maliva-p-0068/cbac911b3ff3473398dcfaceabb7b620_1597719522~tplv-tiktokx-origin.image?dr=8606&nonce=27719&refresh_token=383db6c5e015d75c49aac0ef3d293602&x-expires=1737835200&x-signature=Nwb2aVYCLy8icLwN5Yg6fqWlYf0%3D&biz_tag=tt_video&idc=useast5&ps=4f5296ae&s=CHALLENGE_AWEME&sc=cover&shcp=c0f880ed&shp=d05b14bd&t=bacd0480"
+          ],
+          "width": 720,
+          "height": 720
+        },
+        "duration": 10703,
+        "height": 1024,
+        "width": 576
+      },
+      "music": {
+        "id": 6840839890826038000,
+        "id_str": "6840839890826038022",
+        "title": "M to the B",
+        "author": "Millie B",
+        "duration": 10
+      },
+      "text_extra": [
+        {
+          "hashtag_name": "fyp",
+          "hashtag_id": "229207",
+          "type": 1,
+          "start": 17,
+          "end": 21
+        }
+      ]
+    }
+  ],
+  "cursor": 12,
+  "has_more": 1,
+  "status_code": 0
+}

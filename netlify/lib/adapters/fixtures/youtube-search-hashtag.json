@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "credits_remaining": 1000000,
+  "credits_charged": 1,
+  "videos": [
+    {
+      "type": "video",
+      "id": "jXMISgQq9MM",
+      "url": "https://www.youtube.com/watch?v=jXMISgQq9MM",
+      "title": "Epic fails 🤣🤣🤣 #shorts #funny #fails",
+      "description": "",
+      "thumbnail": "https://i.ytimg.com/vi/jXMISgQq9MM/hqdefault.jpg?sqp=-oaymwFBCNACELwBSFryq4qpAzMIARUAAIhCGADYAQHiAQoIGBACGAY4AUAB8AEB-AG2CIACgA-KAgwIABABGGUgXyhVMA8=&rs=AOn4CLC1HXfxzLayoVBdicS5DIUQh9zGcQ",
+      "channel": {
+        "id": "UCvUzWu1Whyw1FWuLl9GOo_g",
+        "title": "ZZang Funny",
+        "thumbnail": "https://yt3.ggpht.com/rcZKcfewHTzkauGknat3NeC53rGBofYDbL8AjFkwvsk2fXzM1clht7OTn9-1IIPnmbeZkrNGdxI=s68-c-k-c0x00ffffff-no-rj"
+      },
+      "viewCountText": "22,668,056 views",
+      "viewCountInt": 22668056,
+      "publishedTimeText": "4 weeks ago",
+      "publishedTime": "2025-01-04T23:12:42.919Z",
+      "lengthText": "1:00",
+      "lengthSeconds": 60,
+      "badges": []
+    }
+  ],
+  "continuationToken": "4qmFsgLtBRIJRkVoYX...."
+}

@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "credits_remaining": 1000000,
+  "credits_charged": 1,
+  "channelId": "UCxcTeAKWJca6XyJ37_ZoKIQ",
+  "channel": "http://www.youtube.com/@ThePatMcAfeeShow",
+  "name": "The Pat McAfee Show",
+  "avatar": {
+    "image": {
+      "sources": [
+        {
+          "url": "https://yt3.googleusercontent.com/ytc/AIdro_nBgMGIxgHehCAlUUepEhd9Yooi1I55k6IF2WExl-v8Q-c=s72-c-k-c0x00ffffff-no-rj",
+          "width": 72,
+          "height": 72
+        },
+        {
+          "url": "https://yt3.googleusercontent.com/ytc/AIdro_nBgMGIxgHehCAlUUepEhd9Yooi1I55k6IF2WExl-v8Q-c=s120-c-k-c0x00ffffff-no-rj",
+          "width": 120,
+          "height": 120
+        },
+        {
+          "url": "https://yt3.googleusercontent.com/ytc/AIdro_nBgMGIxgHehCAlUUepEhd9Yooi1I55k6IF2WExl-v8Q-c=s160-c-k-c0x00ffffff-no-rj",
+          "width": 160,
+          "height": 160
+        }
+      ]
+    }
+  },
+  "description": "",
+  "subscriberCount": 2750000,
+  "subscriberCountText": "2.75M subscribers",
+  "videoCountText": "9,221 videos",
+  "viewCountText": "2,170,355,382 views",
+  "joinedDateText": "Joined Aug 23, 2017",
+  "tags": "pat mcafee, football, pat mcafee show, the pat mcafee show, pat mcafee podcast, pat mcafee clips, pat mcafee reacts, pat mcafee highlights, pat mcafee live, pat mcafee show live, pat mcafee podcast, nfl, nba, nhl, mlb, ufc, sports",
+  "email": null,
+  "store": "https://store.patmcafeeshow.com",
+  "twitter": "https://twitter.com/PatMcAfeeShow",
+  "instagram": "https://instagram.com/patmcafeeshow",
+  "links": [
+    "https://store.patmcafeeshow.com",
+    "https://twitter.com/PatMcAfeeShow",
+    "https://instagram.com/patmcafeeshow"
+  ],
+  "country": "United States"
+}
