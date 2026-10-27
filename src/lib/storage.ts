@@ -1,7 +1,8 @@
 import type { Video } from "../../shared/types.ts";
 import { savedKey } from "./profiles.ts";
 
-const PASSWORD_KEY = "trendscout.password";
+/** Where the old shared access password used to be stored (before email accounts). */
+const LEGACY_PASSWORD_KEY = "trendscout.password";
 
 function read(key: string): string | null {
   try {
@@ -20,9 +21,8 @@ function write(key: string, value: string | null): void {
   }
 }
 
-export const getPassword = (): string | null => read(PASSWORD_KEY);
-export const setPassword = (pw: string): void => write(PASSWORD_KEY, pw);
-export const clearPassword = (): void => write(PASSWORD_KEY, null);
+/** Removes the shared password left behind by older versions of the app. */
+export const clearLegacyPassword = (): void => write(LEGACY_PASSWORD_KEY, null);
 
 function isVideoLike(x: unknown): x is Video {
   if (!x || typeof x !== "object") return false;

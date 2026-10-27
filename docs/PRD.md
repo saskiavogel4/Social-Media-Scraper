@@ -148,7 +148,7 @@ Browser (React SPA)
    │  fetch /api/search, /api/trending, /api/profile-niche, /api/transcript
    ▼
 Netlify Functions (TypeScript)
-   ├─ auth check (APP_ACCESS_PASSWORD)
+   ├─ auth check (Supabase access token)
    ├─ rate limit + cache (Netlify Blobs)
    ├─ platform adapters → normalise to Video
    └─ trend scoring

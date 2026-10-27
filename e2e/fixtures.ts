@@ -1,5 +1,7 @@
 // Playwright fixtures for the smoke tests.
-// - Every /api/** request is answered by MockApi (never the real Netlify Functions or Scrape Creators).
+// - Every /api/** request is answered by MockApi (never the real Netlify Functions or Scrape Creators),
+//   and needs `Authorization: Bearer <ACCESS_TOKEN>` like the real functions.
+// - Supabase Auth (sign in / sign up / resend / logout) is answered by MockAuth; the real project is never called.
 // - Each request's query string is checked with the server's own validators, so a param
 //   mismatch between src/api.ts and netlify/functions fails the test.
 // - Any other cross-origin request (thumbnails) gets a local 1x1 PNG; nothing leaves the machine.
@@ -11,6 +13,7 @@ import { test as base, expect, type Page, type Route } from "@playwright/test";
 import type { ApiErrorBody, ApiErrorCode } from "../shared/api.ts";
 import type { Platform, Video } from "../shared/types.ts";
 import type { Profile } from "../src/lib/profiles.ts";
+import { MockAuth, ACCESS_TOKEN, SUPABASE_ORIGIN, STORAGE_KEY, makeSession, TEST_USER } from "./mockAuth.ts";
 import {
   ValidationError,
   parseEmptyQuery,
@@ -20,7 +23,7 @@ import {
   parseTrendingQuery,
 } from "../netlify/lib/validate.ts";
 
-export const PASSWORD = "open-sesame";
+export { ACCESS_TOKEN, MockAuth, STORAGE_KEY, TEST_USER };
 
 /** The profile most tests start with: the app's defaults, so the search form looks exactly as before profiles. */
 export const DEFAULT_PROFILE: Profile = {
@@ -75,7 +78,8 @@ const VALIDATORS: Record<Endpoint, (params: URLSearchParams) => unknown> = {
 export interface ApiCall {
   endpoint: Endpoint;
   params: URLSearchParams;
-  password: string | null;
+  /** The Bearer token sent, or null. */
+  token: string | null;
 }
 
 export interface MockReply {
@@ -97,8 +101,7 @@ export class MockApi {
   private readonly handlers = new Map<Endpoint, Handler>();
 
   constructor() {
-    // Mirrors netlify/functions/session.ts: 200 only for the right password.
-    this.on("session", (call) => (call.password === PASSWORD ? { body: { ok: true } } : apiError("unauthorized")));
+    this.on("session", () => ({ body: { ok: true } }));
   }
 
   on(endpoint: Endpoint, handler: Handler): this {
@@ -113,7 +116,9 @@ export class MockApi {
   async handle(route: Route, url: URL): Promise<void> {
     const endpoint = url.pathname.replace(/^\/api\//, "") as Endpoint;
     const request = route.request();
-    const call: ApiCall = { endpoint, params: url.searchParams, password: request.headers()["x-app-password"] ?? null };
+    const bearer = /^Bearer (\S+)$/.exec(request.headers()["authorization"] ?? "");
+    const call: ApiCall = { endpoint, params: url.searchParams, token: bearer?.[1] ?? null };
+    if (request.headers()["x-app-password"] !== undefined) this.problems.push(`${url.pathname} sent the retired x-app-password header`);
     this.calls.push(call);
 
     let reply: MockReply;
@@ -124,7 +129,8 @@ export class MockApi {
     } else if (!validate) {
       this.problems.push(`Unknown endpoint ${url.pathname}`);
       reply = apiError("not_found");
-    } else if (endpoint !== "session" && call.password !== PASSWORD) {
+    } else if (call.token !== ACCESS_TOKEN) {
+      // Mirrors netlify/lib/auth.ts: every endpoint needs a signed-in user's access token.
       reply = apiError("unauthorized");
     } else {
       try {
@@ -152,7 +158,9 @@ export class MockApi {
 
 interface Fixtures {
   api: MockApi;
-  /** Pre-fills the stored password so the app opens past the gate. Default true. */
+  /** The mocked Supabase Auth server (accounts, sign-up mode, recorded calls). */
+  auth: MockAuth;
+  /** Stores a valid Supabase session before the page loads, so the app opens signed in. Default true. */
   signedIn: boolean;
   /**
    * Profiles stored before the page loads (first one active). Default: one profile with the app defaults.
@@ -165,9 +173,15 @@ export const test = base.extend<Fixtures>({
   signedIn: [true, { option: true }],
   seed: [{ profiles: [DEFAULT_PROFILE] }, { option: true }],
 
-  // Auto: every test gets the mocked API, seeded storage and the CSP/page-error checks, even if it never uses `api`.
+  // Playwright requires an object pattern here even when no other fixtures are used.
+  // eslint-disable-next-line no-empty-pattern
+  auth: async ({}, provide) => {
+    await provide(new MockAuth());
+  },
+
+  // Auto: every test gets the mocked API and Auth, seeded storage and the CSP/page-error checks, even if it never uses `api`.
   api: [
-    async ({ page, signedIn, seed, baseURL }, provide) => {
+    async ({ page, auth, signedIn, seed, baseURL }, provide) => {
       const api = new MockApi();
       const origin = new URL(baseURL!).origin;
       const pageErrors: string[] = [];
@@ -182,7 +196,7 @@ export const test = base.extend<Fixtures>({
       });
 
       await page.addInitScript(
-        ({ password, signedIn, profiles }) => {
+        ({ storageKey, session, signedIn, profiles }) => {
           const w = window as unknown as { __cspViolations: string[] };
           w.__cspViolations = [];
           document.addEventListener("securitypolicyviolation", (e) => {
@@ -191,7 +205,7 @@ export const test = base.extend<Fixtures>({
           // Only seed once per test, so sign-out and 401 flows behave like a real browser.
           if (signedIn && !sessionStorage.getItem("e2e.seeded")) {
             sessionStorage.setItem("e2e.seeded", "1");
-            localStorage.setItem("trendscout.password", password);
+            localStorage.setItem(storageKey, JSON.stringify(session));
           }
           if (profiles.length > 0 && !sessionStorage.getItem("e2e.profilesSeeded")) {
             sessionStorage.setItem("e2e.profilesSeeded", "1");
@@ -199,11 +213,13 @@ export const test = base.extend<Fixtures>({
             localStorage.setItem("trendscout.activeProfile", profiles[0].id);
           }
         },
-        { password: PASSWORD, signedIn, profiles: seed.profiles },
+        { storageKey: STORAGE_KEY, session: makeSession(TEST_USER.email), signedIn, profiles: seed.profiles },
       );
 
       await page.route("**/*", async (route) => {
         const url = new URL(route.request().url());
+        // Reaching here means the CSP allowed the request (a blocked one never hits the network).
+        if (url.origin === SUPABASE_ORIGIN) return auth.handle(route, url);
         if (url.origin !== origin) {
           externalHosts.add(url.host);
           if (route.request().resourceType() === "image") {
@@ -233,6 +249,7 @@ export const test = base.extend<Fixtures>({
       expect(csp, "CSP violations").toEqual([]);
       expect(pageErrors, "page errors").toEqual([]);
       expect(api.problems, "API contract problems").toEqual([]);
+      expect(auth.problems, "Supabase Auth contract problems").toEqual([]);
       for (const host of externalHosts) expect(host).not.toContain("scrapecreators");
     },
     { auto: true },
@@ -276,6 +293,19 @@ export function makeVideo(overrides: Partial<Video> & { platform?: Platform } = 
 export async function choose(page: Page, label: string): Promise<void> {
   await page.locator("fieldset label").filter({ hasText: new RegExp(`^${label}$`) }).click();
   await expect(page.getByRole("radio", { name: label, exact: true })).toBeChecked();
+}
+
+/** Signs in on the auth screen (Sign in tab). */
+export async function signInViaUi(page: Page, email = TEST_USER.email, password = TEST_USER.password): Promise<void> {
+  await page.getByRole("tab", { name: "Sign in" }).click();
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+}
+
+/** The stored supabase-js session (null when signed out). */
+export async function storedSession(page: Page): Promise<string | null> {
+  return page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY);
 }
 
 /** Completes the first-run "Create your profile" screen with just a name (the fast path). */

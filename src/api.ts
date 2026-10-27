@@ -1,7 +1,6 @@
 // Typed client for the app's own /api/* endpoints (see shared/api.ts).
 // Never talks to third-party APIs directly; the API key lives only in Netlify Functions.
 import {
-  PASSWORD_HEADER,
   type ApiErrorBody,
   type ApiErrorCode,
   type PlatformChoice,
@@ -12,7 +11,7 @@ import {
   type VideosResponse,
 } from "../shared/api.ts";
 import type { Platform } from "../shared/types.ts";
-import { getPassword } from "./lib/storage.ts";
+import { getAccessToken } from "./lib/supabase.ts";
 
 /** Client-only codes in addition to the server's ApiErrorCode. */
 export type ClientErrorCode = ApiErrorCode | "network_error" | "unknown";
@@ -77,23 +76,25 @@ export function buildQuery(params: Params): string {
 }
 
 let unauthorizedHandler: (() => void) | null = null;
-/** Called on any 401 so the app can clear the stored password and show the gate. */
+/** Called on any 401 so the app can sign the user out and show the sign-in screen. */
 export function onUnauthorized(handler: (() => void) | null): void {
   unauthorizedHandler = handler;
 }
 
 interface RequestOptions {
-  password?: string;
   signal?: AbortSignal;
 }
 
 async function get<T>(path: string, params: Params, opts: RequestOptions = {}): Promise<T> {
-  const password = opts.password ?? getPassword() ?? "";
+  // Fetched per request: supabase-js refreshes the token when it is close to expiring.
+  const token = await getAccessToken();
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (token) headers.Authorization = `Bearer ${token}`;
   let res: Response;
   try {
     res = await fetch(`/api/${path}${buildQuery(params)}`, {
       method: "GET",
-      headers: { [PASSWORD_HEADER]: password, Accept: "application/json" },
+      headers,
       signal: opts.signal,
     });
   } catch (e) {
@@ -102,7 +103,7 @@ async function get<T>(path: string, params: Params, opts: RequestOptions = {}): 
   }
   if (!res.ok) {
     const error = await parseErrorResponse(res);
-    if (error.code === "unauthorized" && opts.password === undefined) unauthorizedHandler?.();
+    if (error.code === "unauthorized") unauthorizedHandler?.();
     throw error;
   }
   try {
@@ -118,9 +119,8 @@ export interface FilterParams {
 }
 
 export const api = {
-  /** Verifies a candidate password; does not trigger the global 401 handler. */
-  session: (password: string, signal?: AbortSignal) =>
-    get<SessionResponse>("session", {}, { password, signal }),
+  /** Checks that the current access token is accepted by the server (a 401 signs the user out). */
+  session: (signal?: AbortSignal) => get<SessionResponse>("session", {}, { signal }),
 
   search: (platform: PlatformChoice, terms: readonly string[], f: FilterParams, signal?: AbortSignal) =>
     get<VideosResponse>(
@@ -140,7 +140,7 @@ export const api = {
 };
 
 /** Human-friendly copy for each error code (non-technical audience). */
-export function friendlyError(error: unknown, context: "search" | "profile" | "transcript" | "session" = "search"): {
+export function friendlyError(error: unknown, context: "search" | "profile" | "transcript" = "search"): {
   title: string;
   detail: string;
 } {
@@ -159,9 +159,9 @@ export function friendlyError(error: unknown, context: "search" | "profile" | "t
     case "bad_request":
       return { title: "Check your search", detail: error instanceof ApiError && error.message ? error.message : "Something in the search wasn't valid." };
     case "unauthorized":
-      return { title: "Wrong password", detail: "That access password didn't work. Check it and try again." };
+      return { title: "Please sign in again", detail: "Your session has ended. Sign in to keep going." };
     case "server_misconfigured":
-      return { title: "App isn't set up yet", detail: "The server is missing its configuration. Ask the site owner to check the API key and password settings." };
+      return { title: "App isn't set up yet", detail: "The server is missing its configuration. Ask the site owner to check the API key setting." };
     case "upstream_error":
       return { title: "The platform didn't respond", detail: "The data source had a hiccup. Try again in a moment." };
     case "network_error":

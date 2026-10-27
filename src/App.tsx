@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import type { Video } from "../shared/types.ts";
 import { sanitizeTerm } from "../shared/api.ts";
 import { onUnauthorized } from "./api.ts";
 import { AppHeader, type View } from "./components/AppHeader.tsx";
 import { ConfirmDialog } from "./components/ConfirmDialog.tsx";
-import { PasswordGate } from "./components/PasswordGate.tsx";
+import { AuthScreen } from "./components/AuthScreen.tsx";
 import { ProfileForm } from "./components/ProfileForm.tsx";
 import { ProfileMenu } from "./components/ProfileMenu.tsx";
 import { ProfileSetup } from "./components/ProfileSetup.tsx";
@@ -18,41 +19,88 @@ import { useSavedVideos } from "./hooks/useSavedVideos.ts";
 import { useVideoSearch, type SearchQuery } from "./hooks/useVideoSearch.ts";
 import { applyAppearance } from "./lib/appearance.ts";
 import { DEFAULT_DRAFT, ProfileError, appearanceOf, type Appearance, type Profile, type ProfileDraft } from "./lib/profiles.ts";
-import { clearPassword, getPassword, setPassword } from "./lib/storage.ts";
+import { describeRedirectError } from "./lib/authErrors.ts";
+import { clearLegacyPassword } from "./lib/storage.ts";
+import { signOutLocally, supabase } from "./lib/supabase.ts";
+import { Spinner } from "./components/ui.tsx";
+
+type AuthState = { status: "loading" } | { status: "signed-out" } | { status: "signed-in"; userId: string };
+
+const SESSION_ENDED = { title: "Please sign in again", detail: "Your session ended, so you were signed out." };
+
+/** Removes Supabase's redirect leftovers (`#access_token=…`, `#error=…` or a bare `#`) from the address bar. */
+function cleanAuthRedirectFromUrl(): void {
+  const { hash, href, pathname, search } = window.location;
+  const leftover = href.endsWith("#") || /(^|[#&])(access_token|refresh_token|error|error_code)=/.test(hash);
+  if (leftover) window.history.replaceState(window.history.state, "", `${pathname}${search}`);
+}
 
 export default function App() {
-  const [authed, setAuthed] = useState(() => !!getPassword());
-  const [expired, setExpired] = useState(false);
+  const [auth, setAuth] = useState<AuthState>({ status: "loading" });
+  const [notice, setNotice] = useState<{ title: string; detail: string } | null>(() => {
+    // An expired or reused confirmation link comes back as #error=…; read it before the URL is cleaned.
+    const detail = describeRedirectError(window.location.hash);
+    return detail ? { title: "That link didn't work", detail } : null;
+  });
 
-  // Any 401 from the API clears the stored password and returns to the gate.
+  useEffect(() => {
+    clearLegacyPassword();
+    let active = true;
+    const apply = (session: Session | null) => {
+      if (!active) return;
+      const userId = session?.user?.id;
+      // Keep the same object while the user is unchanged (token refreshes shouldn't re-render the app).
+      setAuth((prev) =>
+        userId
+          ? prev.status === "signed-in" && prev.userId === userId
+            ? prev
+            : { status: "signed-in", userId }
+          : prev.status === "signed-out"
+            ? prev
+            : { status: "signed-out" },
+      );
+    };
+    // getSession waits for supabase-js to finish reading a confirmation link from the URL.
+    void supabase.auth
+      .getSession()
+      .then(({ data }) => apply(data.session))
+      .catch(() => apply(null))
+      .finally(cleanAuthRedirectFromUrl);
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => apply(session));
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Any 401 from the API signs this browser out and returns to the sign-in screen.
   useEffect(() => {
     onUnauthorized(() => {
-      clearPassword();
-      setExpired(true);
-      setAuthed(false);
+      setNotice(SESSION_ENDED);
+      setAuth({ status: "signed-out" });
+      void signOutLocally();
     });
     return () => onUnauthorized(null);
   }, []);
 
-  if (!authed) {
+  if (auth.status === "loading") {
     return (
-      <PasswordGate
-        expired={expired}
-        onSuccess={(pw) => {
-          setPassword(pw);
-          setExpired(false);
-          setAuthed(true);
-        }}
-      />
+      <div role="status" className="flex min-h-dvh items-center justify-center text-accent-700 dark:text-accent-300">
+        <Spinner className="h-6 w-6" />
+        <span className="sr-only">Loading…</span>
+      </div>
     );
   }
 
+  if (auth.status === "signed-out") return <AuthScreen notice={notice} />;
+
   return (
     <ProfilesApp
+      key={auth.userId}
       onSignOut={() => {
-        clearPassword();
-        setExpired(false);
-        setAuthed(false);
+        setNotice(null);
+        setAuth({ status: "signed-out" });
+        void signOutLocally();
       }}
     />
   );

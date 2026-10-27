@@ -3,7 +3,6 @@
 import { readFile } from "node:fs/promises";
 import type { ProfileNicheResponse, TranscriptResponse, VideosResponse } from "../shared/api.ts";
 import {
-  PASSWORD,
   addTerms,
   apiError,
   cardScores,
@@ -12,6 +11,7 @@ import {
   expect,
   expectNoHorizontalScroll,
   makeVideo,
+  signInViaUi,
   test,
 } from "./fixtures.ts";
 
@@ -22,43 +22,6 @@ function searchResults(): VideosResponse {
   const scores = [42, 91, 67, 15, 78];
   return { videos: scores.map((trendScore) => makeVideo({ trendScore })), errors: [] };
 }
-
-test.describe("password gate", () => {
-  test.use({ signedIn: false, seed: { profiles: [] } });
-
-  test("rejects a wrong password, accepts the right one, asks for a profile, and returns to the gate on a later 401", async ({ page, api }) => {
-    await page.goto("/");
-    const password = page.getByLabel("Access password");
-    await expect(password).toBeFocused();
-
-    await password.fill("wrong-password");
-    await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByRole("alert")).toContainText("Wrong password");
-    await expect(password).toHaveValue("");
-    await expect(page.getByRole("heading", { name: "Find what's trending in your niche" })).toHaveCount(0);
-
-    await password.fill(PASSWORD);
-    await page.getByRole("button", { name: "Continue" }).click();
-    // First run: a profile is needed before searching (only the name is required).
-    await expect(page.getByLabel("Profile name")).toBeFocused();
-    await page.getByRole("button", { name: "Create profile" }).click();
-    await expect(page.getByRole("alert")).toContainText("Enter a name for your profile.");
-    await createProfileViaUi(page, "Saskia");
-    expect(api.callsTo("session").map((c) => c.password)).toEqual(["wrong-password", PASSWORD]);
-
-    // The password changed server-side: the next API call is a 401, which sends the user back to the gate.
-    api.on("trending", () => apiError("unauthorized"));
-    await page.getByRole("button", { name: "Trending now" }).click();
-    await expect(page.getByText("Your session ended. Please enter the access password again.")).toBeVisible();
-    expect(await page.evaluate(() => localStorage.getItem("trendscout.password"))).toBeNull();
-
-    // Profiles live on the device, so signing back in goes straight to search.
-    await page.getByLabel("Access password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByRole("heading", { name: "Find what's trending in your niche" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Saskia, profile menu" })).toBeVisible();
-  });
-});
 
 test("niche search with chips renders results sorted by Trend Score", async ({ page, api }) => {
   api.on("search", () => ({ body: searchResults() }));
@@ -262,9 +225,8 @@ test.describe("at 360px wide", () => {
     }));
 
     await page.goto("/");
-    await expectNoHorizontalScroll(page, "password gate");
-    await page.getByLabel("Access password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Continue" }).click();
+    await expectNoHorizontalScroll(page, "sign-in screen");
+    await signInViaUi(page);
     await expect(page.getByRole("heading", { name: "Create your profile" })).toBeVisible();
     for (const section of ["Your content", "Look and feel", "Search defaults"]) {
       await page.locator("summary").filter({ hasText: section }).click();
