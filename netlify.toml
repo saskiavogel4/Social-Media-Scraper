@@ -9,6 +9,13 @@
 [functions]
   node_bundler = "esbuild"
 
+# Unknown /api/* paths get a JSON 404 instead of the SPA's index.html.
+# (Functions with a config.path run before redirects, so real endpoints are unaffected.)
+[[redirects]]
+  from = "/api/*"
+  to = "/api-not-found.json"
+  status = 404
+
 # Single-page app: send unknown routes to index.html.
 # Functions declare their own /api/* paths, which take precedence.
 [[redirects]]
