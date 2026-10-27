@@ -27,6 +27,7 @@ npm run lint && npm run typecheck && npm test && npm run build && npm run check:
 3. Under **Site configuration → Environment variables**, add:
    - `SCRAPE_CREATORS_API_KEY`: your Scrape Creators API key
    - `APP_ACCESS_PASSWORD`: a password you'll share with people allowed to use the app
-4. Deploy. Visit the site: the setup status card should show all green checks.
+   - Optional: `RATE_LIMIT_PER_HOUR` (searches per visitor per hour, default 30) and `CALL_LIMIT_PER_HOUR` (uncached Scrape Creators calls per visitor per hour, roughly credits, default 60)
+4. Deploy. Visit the site: enter the access password and run a search.
 
 The API key is only ever read inside Netlify Functions; it is never sent to the browser.

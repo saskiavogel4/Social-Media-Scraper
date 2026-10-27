@@ -8,7 +8,15 @@ import type { ScFetch } from "./adapters/types.ts";
 import { checkAuth } from "./auth.ts";
 import { getCache } from "./cache.ts";
 import { apiError, errorResponse, json, toPlatformError } from "./http.ts";
-import { AUTH_FAILURE_LIMIT_PER_HOUR, clientIp, consume, limitFromEnv, peek } from "./rateLimit.ts";
+import {
+  AUTH_FAILURE_LIMIT_PER_HOUR,
+  CallBudgetExceededError,
+  callLimitFromEnv,
+  clientIp,
+  consume,
+  limitFromEnv,
+  peek,
+} from "./rateLimit.ts";
 import { createScFetch } from "./scrapeCreators.ts";
 import { ValidationError } from "./validate.ts";
 
@@ -59,7 +67,10 @@ export function createHandler(
       const params = new URL(req.url).searchParams;
       let client: ScFetch | undefined;
       const sc = () => {
-        client ??= createScFetch(process.env.SCRAPE_CREATORS_API_KEY ?? "", { cache: getCache("sc-cache") });
+        client ??= createScFetch(process.env.SCRAPE_CREATORS_API_KEY ?? "", {
+          cache: getCache("sc-cache"),
+          beforeUpstream: rateLimited ? () => spendCall(ip) : undefined,
+        });
         return client;
       };
       return await fn({ req, params, sc });
@@ -68,6 +79,11 @@ export function createHandler(
       return errorResponse(err);
     }
   };
+}
+
+async function spendCall(ip: string): Promise<void> {
+  const result = await consume("calls", ip, callLimitFromEnv());
+  if (!result.allowed) throw new CallBudgetExceededError();
 }
 
 export const MAX_RESULTS = 60;

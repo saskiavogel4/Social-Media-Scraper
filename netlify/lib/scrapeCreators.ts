@@ -47,6 +47,8 @@ export interface ScFetchOptions {
   cache?: Cache;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
+  /** Runs before every uncached upstream call (i.e. every call that spends credits); may throw to block it. */
+  beforeUpstream?: () => Promise<void>;
 }
 
 export function isAllowedPath(path: string): path is AllowedPath {
@@ -131,6 +133,7 @@ export function createScFetch(apiKey: string, opts: ScFetchOptions = {}): ScFetc
       const hit = await cache.get(key).catch(() => undefined);
       if (hit !== undefined) return hit;
     }
+    await opts.beforeUpstream?.();
     const data = await callUpstream(path, url);
     if (cache) await cache.set(key, data, TTLS[path]).catch(() => undefined);
     return data;

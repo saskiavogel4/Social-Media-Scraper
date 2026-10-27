@@ -5,6 +5,7 @@
 import type { ApiErrorBody, ApiErrorCode, PlatformError } from "../../shared/api.ts";
 import type { Platform } from "../../shared/types.ts";
 import { ScrapeCreatorsError } from "./adapters/types.ts";
+import { CallBudgetExceededError } from "./rateLimit.ts";
 
 const BASE_HEADERS = {
   "cache-control": "no-store",
@@ -78,6 +79,7 @@ export function mapError(err: unknown, opts: MapErrorOptions = {}): MappedError 
     }
     return { code, message: DEFAULT_MESSAGES[code] };
   }
+  if (err instanceof CallBudgetExceededError) return { code: "rate_limited", message: DEFAULT_MESSAGES.rate_limited };
   const name = err instanceof Error ? err.name : typeof err;
   const message = err instanceof Error ? err.message : "non-error thrown";
   console.error(`Unexpected error${where}: ${redact(`${name}: ${message}`)}`);

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { ScrapeCreatorsError } from "./adapters/types.ts";
 import { apiError, mapError, toPlatformError } from "./http.ts";
+import { CallBudgetExceededError } from "./rateLimit.ts";
 
 describe("apiError", () => {
   it("uses the status map, friendly messages and no-store", async () => {
@@ -38,5 +39,11 @@ describe("mapError", () => {
       code: "out_of_credits",
       message: expect.any(String),
     });
+  });
+});
+
+describe("call budget", () => {
+  it("maps CallBudgetExceededError to rate_limited", () => {
+    expect(mapError(new CallBudgetExceededError()).code).toBe("rate_limited");
   });
 });

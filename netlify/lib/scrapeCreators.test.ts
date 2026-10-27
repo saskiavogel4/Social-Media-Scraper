@@ -106,6 +106,23 @@ describe("request and key handling", () => {
   });
 });
 
+describe("call budget hook", () => {
+  it("runs before uncached calls only, and can block them", async () => {
+    const cache = new MemoryCache();
+    const fetchImpl = mockFetch(() => okResponse({ ok: 1 }));
+    let budget = 1;
+    const beforeUpstream = vi.fn(async () => {
+      if (budget-- <= 0) throw new Error("budget");
+    });
+    const sc = createScFetch(KEY, { fetchImpl, cache, beforeUpstream });
+    await sc("/v1/youtube/search", { query: "a" });
+    await sc("/v1/youtube/search", { query: "a" }); // cache hit: free
+    expect(beforeUpstream).toHaveBeenCalledTimes(1);
+    await expect(sc("/v1/youtube/search", { query: "b" })).rejects.toThrow("budget");
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("caching", () => {
   it("cache key is path + sorted params and never contains the key", () => {
     expect(cacheKey("/v1/youtube/search", { b: "2", a: "1" })).toBe(cacheKey("/v1/youtube/search", { a: "1", b: "2" }));
