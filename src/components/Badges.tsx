@@ -20,7 +20,7 @@ export function TrendScoreBadge({ score }: { score: number }) {
   const rounded = Math.round(Math.max(0, Math.min(100, score)));
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full bg-violet-700 px-2 py-0.5 text-xs font-bold text-white shadow-sm"
+      className="inline-flex items-center gap-1 rounded-full bg-accent-700 px-2 py-0.5 text-xs font-bold text-white shadow-sm"
       title="Trend Score (0–100): engagement, velocity and outperformance"
     >
       <FlameIcon width={12} height={12} />

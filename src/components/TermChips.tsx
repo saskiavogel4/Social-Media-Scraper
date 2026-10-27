@@ -72,20 +72,20 @@ export function TermChips({ label, hint, terms, onChange, draft, onDraftChange, 
         {label}
       </label>
       <div
-        className="mt-1.5 flex min-h-12 flex-wrap items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-2 py-1.5 focus-within:border-violet-600 focus-within:ring-2 focus-within:ring-violet-600/40 dark:border-slate-600 dark:bg-slate-900"
+        className="mt-1.5 flex min-h-12 flex-wrap items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-2 py-1.5 focus-within:border-accent-600 focus-within:ring-2 focus-within:ring-accent-600/40 dark:border-slate-600 dark:bg-slate-900"
         onClick={(e) => {
           if (e.target === e.currentTarget) inputRef.current?.focus();
         }}
       >
         <ul className="contents" aria-label="Selected terms">
           {terms.map((t, i) => (
-            <li key={t} className="inline-flex max-w-full items-center gap-1 rounded-full bg-violet-100 py-1 pr-1 pl-3 text-sm font-medium text-violet-900 dark:bg-violet-900/60 dark:text-violet-100">
+            <li key={t} className="inline-flex max-w-full items-center gap-1 rounded-full bg-accent-100 py-1 pr-1 pl-3 text-sm font-medium text-accent-900 dark:bg-accent-900/60 dark:text-accent-100">
               <span className="truncate">{t}</span>
               <button
                 type="button"
                 onClick={() => remove(i)}
                 aria-label={`Remove ${t}`}
-                className="grid h-6 w-6 shrink-0 place-items-center rounded-full hover:bg-violet-200 focus-visible:outline-2 focus-visible:outline-violet-700 dark:hover:bg-violet-800"
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-full hover:bg-accent-200 focus-visible:outline-2 focus-visible:outline-accent-700 dark:hover:bg-accent-800"
               >
                 <CloseIcon width={14} height={14} />
               </button>

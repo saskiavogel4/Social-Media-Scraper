@@ -4,7 +4,7 @@ import { CloseIcon } from "./icons.tsx";
 type Tone = "info" | "warning" | "error";
 
 const TONES: Record<Tone, string> = {
-  info: "border-violet-200 bg-violet-50 text-violet-900 dark:border-violet-800 dark:bg-violet-950/60 dark:text-violet-100",
+  info: "border-accent-200 bg-accent-50 text-accent-900 dark:border-accent-800 dark:bg-accent-950/60 dark:text-accent-100",
   warning: "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-100",
   error: "border-red-300 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-950/60 dark:text-red-100",
 };

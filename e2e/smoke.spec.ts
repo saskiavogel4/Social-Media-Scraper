@@ -8,6 +8,7 @@ import {
   apiError,
   cardScores,
   choose,
+  createProfileViaUi,
   expect,
   expectNoHorizontalScroll,
   makeVideo,
@@ -23,9 +24,9 @@ function searchResults(): VideosResponse {
 }
 
 test.describe("password gate", () => {
-  test.use({ signedIn: false });
+  test.use({ signedIn: false, seed: { profiles: [] } });
 
-  test("rejects a wrong password, accepts the right one, and returns to the gate on a later 401", async ({ page, api }) => {
+  test("rejects a wrong password, accepts the right one, asks for a profile, and returns to the gate on a later 401", async ({ page, api }) => {
     await page.goto("/");
     const password = page.getByLabel("Access password");
     await expect(password).toBeFocused();
@@ -38,7 +39,11 @@ test.describe("password gate", () => {
 
     await password.fill(PASSWORD);
     await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByRole("heading", { name: "Find what's trending in your niche" })).toBeVisible();
+    // First run: a profile is needed before searching (only the name is required).
+    await expect(page.getByLabel("Profile name")).toBeFocused();
+    await page.getByRole("button", { name: "Create profile" }).click();
+    await expect(page.getByRole("alert")).toContainText("Enter a name for your profile.");
+    await createProfileViaUi(page, "Saskia");
     expect(api.callsTo("session").map((c) => c.password)).toEqual(["wrong-password", PASSWORD]);
 
     // The password changed server-side: the next API call is a 401, which sends the user back to the gate.
@@ -46,6 +51,12 @@ test.describe("password gate", () => {
     await page.getByRole("button", { name: "Trending now" }).click();
     await expect(page.getByText("Your session ended. Please enter the access password again.")).toBeVisible();
     expect(await page.evaluate(() => localStorage.getItem("trendscout.password"))).toBeNull();
+
+    // Profiles live on the device, so signing back in goes straight to search.
+    await page.getByLabel("Access password").fill(PASSWORD);
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByRole("heading", { name: "Find what's trending in your niche" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Saskia, profile menu" })).toBeVisible();
   });
 });
 
@@ -231,7 +242,7 @@ test("out of credits shows a clear error and Try again recovers", async ({ page,
 });
 
 test.describe("at 360px wide", () => {
-  test.use({ viewport: { width: 360, height: 780 }, signedIn: false });
+  test.use({ viewport: { width: 360, height: 780 }, signedIn: false, seed: { profiles: [] } });
 
   test("no view scrolls horizontally", async ({ page, api }) => {
     const longHandle = "a_really_long_creator_handle_without_any_breaks_1234567890";
@@ -254,8 +265,21 @@ test.describe("at 360px wide", () => {
     await expectNoHorizontalScroll(page, "password gate");
     await page.getByLabel("Access password").fill(PASSWORD);
     await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByRole("heading", { name: "Find what's trending in your niche" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create your profile" })).toBeVisible();
+    for (const section of ["Your content", "Look and feel", "Search defaults"]) {
+      await page.locator("summary").filter({ hasText: section }).click();
+    }
+    await expectNoHorizontalScroll(page, "create profile (all sections open)");
+    await createProfileViaUi(page, "A very long profile name that fills forty");
     await expectNoHorizontalScroll(page, "search form");
+
+    await page.getByRole("button", { name: /profile menu$/ }).click();
+    await expect(page.getByRole("menu")).toBeVisible();
+    await expectNoHorizontalScroll(page, "profile menu");
+    await page.getByRole("menuitem", { name: "Edit profile" }).click();
+    await expect(page.getByRole("heading", { name: "Edit profile" })).toBeVisible();
+    await expectNoHorizontalScroll(page, "edit profile");
+    await page.getByRole("button", { name: "Cancel" }).click();
 
     await addTerms(page, TERMS_LABEL, ["#averyveryverylonghashtagthatgoesonandon", "meal prep", "#booktok", "high protein", "#x"]);
     await expectNoHorizontalScroll(page, "search form with 5 chips");

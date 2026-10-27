@@ -27,11 +27,11 @@ export function Segmented<T extends string>({ legend, options, value, onChange, 
           return (
             <label
               key={o.value}
-              className={`relative flex min-h-10 items-center justify-center rounded-lg px-2 py-2 text-center text-sm font-medium transition select-none has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-1 has-[:focus-visible]:outline-violet-600 ${
+              className={`relative flex min-h-10 items-center justify-center rounded-lg px-2 py-2 text-center text-sm font-medium transition select-none has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-1 has-[:focus-visible]:outline-accent-600 dark:has-[:focus-visible]:outline-accent-400 ${
                 o.disabled
                   ? "cursor-not-allowed text-slate-400 dark:text-slate-500"
                   : checked
-                    ? "cursor-pointer bg-white text-violet-800 shadow-sm dark:bg-slate-950 dark:text-violet-300"
+                    ? "cursor-pointer bg-white text-accent-800 shadow-sm dark:bg-slate-950 dark:text-accent-300"
                     : "cursor-pointer text-slate-700 hover:bg-white/60 dark:text-slate-300 dark:hover:bg-slate-700"
               }`}
             >

@@ -15,6 +15,8 @@ interface ResultsViewProps {
   saved: SavedVideos;
   onOpen: (v: Video) => void;
   onRetry: (q: SearchQuery) => void;
+  /** The profile's preferred sort; results start with it and follow it when the profile changes. */
+  defaultSort?: SortKey;
 }
 
 export function describeQuery(q: SearchQuery): string {
@@ -22,10 +24,15 @@ export function describeQuery(q: SearchQuery): string {
   return q.kind === "trending" ? `Trending now on ${where}` : `${q.terms.join(", ")} on ${where}`;
 }
 
-export function ResultsView({ state, saved, onOpen, onRetry }: ResultsViewProps) {
+export function ResultsView({ state, saved, onOpen, onRetry, defaultSort = "trend" }: ResultsViewProps) {
   const sortId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const [sort, setSort] = useState<SortKey>("trend");
+  const [sort, setSort] = useState<SortKey>(defaultSort);
+  const [prevDefaultSort, setPrevDefaultSort] = useState(defaultSort);
+  if (prevDefaultSort !== defaultSort) {
+    setPrevDefaultSort(defaultSort);
+    setSort(defaultSort);
+  }
   const [dismissed, setDismissed] = useState<PlatformError[] | null>(null);
 
   const data = state.status === "success" ? state.data : null;

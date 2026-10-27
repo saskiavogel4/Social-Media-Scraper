@@ -110,7 +110,7 @@ export function VideoDrawer({ video, saved, onToggleSave, onClose, onHashtag }: 
                     <button
                       type="button"
                       onClick={() => onHashtag(`#${tag}`, video)}
-                      className={`rounded-full bg-violet-100 px-3 py-1 text-sm font-medium text-violet-900 hover:bg-violet-200 dark:bg-violet-900/60 dark:text-violet-100 dark:hover:bg-violet-800 ${focusRing}`}
+                      className={`rounded-full bg-accent-100 px-3 py-1 text-sm font-medium text-accent-900 hover:bg-accent-200 dark:bg-accent-900/60 dark:text-accent-100 dark:hover:bg-accent-800 ${focusRing}`}
                     >
                       #{tag}
                     </button>

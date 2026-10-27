@@ -1,8 +1,116 @@
 @import "tailwindcss";
 
+/*
+ * Theme: <html data-theme="light|dark|system"> is set from the active profile (src/lib/appearance.ts).
+ * "light"/"dark" override the OS setting; "system" (or no attribute) follows prefers-color-scheme.
+ */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
+/*
+ * Accent: components use accent-* utilities (bg-accent-700, text-accent-900, outline-accent-600 ...).
+ * Violet is the default; <html data-accent="..."> swaps the whole scale. Shades are remapped where
+ * needed so every accent keeps WCAG AA in light and dark mode:
+ *  - amber: 600 -> amber-700 so focus outlines keep 3:1 against slate-100 surfaces.
+ *  - slate: 100/200 -> one step darker so chips stay visible on white; 900/950 -> slate-700/800 so
+ *    accent backgrounds stay distinguishable from the dark page.
+ */
+@theme {
+  --color-accent-50: oklch(96.9% 0.016 293.756);
+  --color-accent-100: oklch(94.3% 0.029 294.588);
+  --color-accent-200: oklch(89.4% 0.057 293.283);
+  --color-accent-300: oklch(81.1% 0.111 293.571);
+  --color-accent-400: oklch(70.2% 0.183 293.541);
+  --color-accent-500: oklch(60.6% 0.25 292.717);
+  --color-accent-600: oklch(54.1% 0.281 293.009);
+  --color-accent-700: oklch(49.1% 0.27 292.581);
+  --color-accent-800: oklch(43.2% 0.232 292.759);
+  --color-accent-900: oklch(38% 0.189 293.745);
+  --color-accent-950: oklch(28.3% 0.141 291.089);
+}
+
 @layer base {
+  [data-accent="blue"] {
+    --color-accent-50: --theme(--color-blue-50);
+    --color-accent-100: --theme(--color-blue-100);
+    --color-accent-200: --theme(--color-blue-200);
+    --color-accent-300: --theme(--color-blue-300);
+    --color-accent-400: --theme(--color-blue-400);
+    --color-accent-500: --theme(--color-blue-500);
+    --color-accent-600: --theme(--color-blue-600);
+    --color-accent-700: --theme(--color-blue-700);
+    --color-accent-800: --theme(--color-blue-800);
+    --color-accent-900: --theme(--color-blue-900);
+    --color-accent-950: --theme(--color-blue-950);
+  }
+  [data-accent="emerald"] {
+    --color-accent-50: --theme(--color-emerald-50);
+    --color-accent-100: --theme(--color-emerald-100);
+    --color-accent-200: --theme(--color-emerald-200);
+    --color-accent-300: --theme(--color-emerald-300);
+    --color-accent-400: --theme(--color-emerald-400);
+    --color-accent-500: --theme(--color-emerald-500);
+    --color-accent-600: --theme(--color-emerald-600);
+    --color-accent-700: --theme(--color-emerald-700);
+    --color-accent-800: --theme(--color-emerald-800);
+    --color-accent-900: --theme(--color-emerald-900);
+    --color-accent-950: --theme(--color-emerald-950);
+  }
+  [data-accent="rose"] {
+    --color-accent-50: --theme(--color-rose-50);
+    --color-accent-100: --theme(--color-rose-100);
+    --color-accent-200: --theme(--color-rose-200);
+    --color-accent-300: --theme(--color-rose-300);
+    --color-accent-400: --theme(--color-rose-400);
+    --color-accent-500: --theme(--color-rose-500);
+    --color-accent-600: --theme(--color-rose-600);
+    --color-accent-700: --theme(--color-rose-700);
+    --color-accent-800: --theme(--color-rose-800);
+    --color-accent-900: --theme(--color-rose-900);
+    --color-accent-950: --theme(--color-rose-950);
+  }
+  [data-accent="amber"] {
+    --color-accent-50: --theme(--color-amber-50);
+    --color-accent-100: --theme(--color-amber-100);
+    --color-accent-200: --theme(--color-amber-200);
+    --color-accent-300: --theme(--color-amber-300);
+    --color-accent-400: --theme(--color-amber-400);
+    --color-accent-500: --theme(--color-amber-500);
+    --color-accent-600: --theme(--color-amber-700);
+    --color-accent-700: --theme(--color-amber-700);
+    --color-accent-800: --theme(--color-amber-800);
+    --color-accent-900: --theme(--color-amber-900);
+    --color-accent-950: --theme(--color-amber-950);
+  }
+  [data-accent="slate"] {
+    --color-accent-50: --theme(--color-slate-50);
+    --color-accent-100: --theme(--color-slate-200);
+    --color-accent-200: --theme(--color-slate-300);
+    --color-accent-300: --theme(--color-slate-300);
+    --color-accent-400: --theme(--color-slate-400);
+    --color-accent-500: --theme(--color-slate-500);
+    --color-accent-600: --theme(--color-slate-600);
+    --color-accent-700: --theme(--color-slate-700);
+    --color-accent-800: --theme(--color-slate-800);
+    --color-accent-900: --theme(--color-slate-700);
+    --color-accent-950: --theme(--color-slate-800);
+  }
   :root {
     color-scheme: light dark;
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
   }
   body {
     @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;

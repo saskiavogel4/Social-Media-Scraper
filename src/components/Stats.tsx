@@ -10,12 +10,15 @@ const STATS: { key: keyof Video["stats"]; label: string; Icon: ComponentType<SVG
   { key: "shares", label: "shares", Icon: ShareIcon },
 ];
 
-export function CompactStats({ stats }: { stats: Video["stats"] }) {
+export function CompactStats({ stats, compact = false }: { stats: Video["stats"]; compact?: boolean }) {
   return (
-    <ul className="grid grid-cols-4 gap-1 text-xs text-slate-600 dark:text-slate-300" aria-label="Stats">
+    <ul
+      className={`grid gap-1 text-slate-600 dark:text-slate-300 ${compact ? "grid-cols-2 text-[0.6875rem]" : "grid-cols-4 text-xs"}`}
+      aria-label="Stats"
+    >
       {STATS.map(({ key, label, Icon }) => (
         <li key={key} className="flex min-w-0 items-center gap-1" title={stats[key] !== undefined ? `${stats[key]?.toLocaleString()} ${label}` : `${label} unknown`}>
-          <Icon width={14} height={14} className="shrink-0" />
+          <Icon width={compact ? 12 : 14} height={compact ? 12 : 14} className="shrink-0" />
           <span className="truncate tabular-nums">
             {formatCompact(stats[key])}
             <span className="sr-only"> {label}</span>

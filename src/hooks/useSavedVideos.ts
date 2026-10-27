@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Video } from "../../shared/types.ts";
+import { savedKey } from "../lib/profiles.ts";
 import { loadSaved, storeSaved, videoKey } from "../lib/storage.ts";
 
 export interface SavedVideos {
@@ -9,19 +10,20 @@ export interface SavedVideos {
   remove: (v: Video) => void;
 }
 
-export function useSavedVideos(): SavedVideos {
-  const [saved, setSaved] = useState<Video[]>(loadSaved);
+/** Saved ideas of one profile. Remount (key by profile id) when the profile changes. */
+export function useSavedVideos(profileId: string): SavedVideos {
+  const [saved, setSaved] = useState<Video[]>(() => loadSaved(profileId));
 
-  useEffect(() => storeSaved(saved), [saved]);
+  useEffect(() => storeSaved(profileId, saved), [profileId, saved]);
 
   // Keep multiple tabs in sync.
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key === null || e.key === "trendscout.saved") setSaved(loadSaved());
+      if (e.key === null || e.key === savedKey(profileId)) setSaved(loadSaved(profileId));
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
-  }, []);
+  }, [profileId]);
 
   const keys = useMemo(() => new Set(saved.map(videoKey)), [saved]);
   const isSaved = useCallback((v: Video) => keys.has(videoKey(v)), [keys]);

@@ -1,16 +1,20 @@
+import type { ReactNode } from "react";
 import { Logo } from "./Logo.tsx";
 import { focusRing } from "./ui.tsx";
 
 export type View = "search" | "saved";
 
 interface AppHeaderProps {
-  view: View;
+  /** null while a non-tab screen (e.g. profile settings) is shown. */
+  view: View | null;
   onViewChange: (v: View) => void;
   savedCount: number;
   onSignOut: () => void;
+  /** The profile menu, shown between the tabs and Sign out. */
+  profileMenu?: ReactNode;
 }
 
-export function AppHeader({ view, onViewChange, savedCount, onSignOut }: AppHeaderProps) {
+export function AppHeader({ view, onViewChange, savedCount, onSignOut, profileMenu }: AppHeaderProps) {
   const tab = (v: View, label: string, badge?: number) => {
     const active = view === v;
     return (
@@ -20,7 +24,7 @@ export function AppHeader({ view, onViewChange, savedCount, onSignOut }: AppHead
         aria-current={active ? "page" : undefined}
         className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition ${focusRing} ${
           active
-            ? "bg-violet-100 text-violet-900 dark:bg-violet-900/60 dark:text-violet-100"
+            ? "bg-accent-100 text-accent-900 dark:bg-accent-900/60 dark:text-accent-100"
             : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
         }`}
       >
@@ -28,7 +32,7 @@ export function AppHeader({ view, onViewChange, savedCount, onSignOut }: AppHead
         {badge !== undefined && (
           <span
             className={`min-w-5 rounded-full px-1.5 text-center text-xs tabular-nums ${
-              active ? "bg-violet-700 text-white" : "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100"
+              active ? "bg-accent-700 text-white" : "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100"
             }`}
           >
             {badge}
@@ -53,6 +57,7 @@ export function AppHeader({ view, onViewChange, savedCount, onSignOut }: AppHead
         <nav aria-label="Main" className="flex items-center gap-1">
           {tab("search", "Search")}
           {tab("saved", "Saved", savedCount)}
+          {profileMenu}
           <button
             type="button"
             onClick={onSignOut}

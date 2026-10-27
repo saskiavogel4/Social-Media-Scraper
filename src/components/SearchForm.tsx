@@ -1,5 +1,7 @@
 import { useId, useState, type FormEvent } from "react";
 import { MAX_TERMS, type PlatformChoice, type TimeWindow } from "../../shared/api.ts";
+import type { Profile } from "../lib/profiles.ts";
+import { MIN_VIEW_OPTIONS, PLATFORM_CHOICES, WINDOW_OPTIONS } from "../lib/searchOptions.ts";
 import { ProfilePanel } from "./ProfilePanel.tsx";
 import { Segmented, type SegmentedOption } from "./Segmented.tsx";
 import { addTerms, TermChips } from "./TermChips.tsx";
@@ -28,26 +30,39 @@ export const INITIAL_FORM: FormState = {
   minViews: 0,
 };
 
-const PLATFORM_OPTIONS: SegmentedOption<PlatformChoice>[] = [
-  { value: "tiktok", label: "TikTok" },
-  { value: "instagram", label: "Instagram" },
-  { value: "youtube", label: "YouTube Shorts" },
-  { value: "all", label: "All" },
-];
+/** The search form as a profile wants it to start: platform, niche terms, handle and filters. */
+export function formFromProfile(p: Profile): FormState {
+  // With only a handle (no niche terms), start in account mode so one tap analyses it.
+  const accountFirst = !!p.handle && p.nicheTerms.length === 0 && p.primaryPlatform !== "all";
+  return {
+    platform: p.primaryPlatform,
+    mode: accountFirst ? "profile" : "niche",
+    terms: [...p.nicheTerms],
+    handle: p.handle ?? "",
+    profileTerms: [],
+    window: p.defaultWindow,
+    minViews: p.defaultMinViews,
+  };
+}
 
-const WINDOW_OPTIONS: { value: TimeWindow; label: string }[] = [
-  { value: "24h", label: "Last 24 hours" },
-  { value: "7d", label: "Last 7 days" },
-  { value: "30d", label: "Last 30 days" },
-  { value: "any", label: "Any time" },
-];
+/** After editing a profile, carry over only the search defaults that actually changed. */
+export function formPatchForProfileEdit(prev: Profile, next: Profile, form: FormState): Partial<FormState> {
+  const patch: Partial<FormState> = {};
+  if (prev.primaryPlatform !== next.primaryPlatform) {
+    patch.platform = next.primaryPlatform;
+    if (next.primaryPlatform === "all" && form.mode === "profile") patch.mode = "niche";
+  }
+  if (prev.nicheTerms.join("\n") !== next.nicheTerms.join("\n")) patch.terms = [...next.nicheTerms];
+  if (prev.handle !== next.handle) {
+    patch.handle = next.handle ?? "";
+    patch.profileTerms = [];
+  }
+  if (prev.defaultWindow !== next.defaultWindow) patch.window = next.defaultWindow;
+  if (prev.defaultMinViews !== next.defaultMinViews) patch.minViews = next.defaultMinViews;
+  return patch;
+}
 
-const MIN_VIEW_OPTIONS = [
-  { value: 0, label: "Any" },
-  { value: 10_000, label: "10K+" },
-  { value: 100_000, label: "100K+" },
-  { value: 1_000_000, label: "1M+" },
-];
+const PLATFORM_OPTIONS: SegmentedOption<PlatformChoice>[] = [...PLATFORM_CHOICES];
 
 interface SearchFormProps {
   form: FormState;
