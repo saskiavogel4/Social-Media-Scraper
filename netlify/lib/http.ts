@@ -5,6 +5,7 @@
 import type { ApiErrorBody, ApiErrorCode, PlatformError } from "../../shared/api.ts";
 import type { Platform } from "../../shared/types.ts";
 import { ScrapeCreatorsError } from "./adapters/types.ts";
+import { scrapeCreatorsKey } from "./env.ts";
 import { CallBudgetExceededError } from "./rateLimit.ts";
 
 const BASE_HEADERS = {
@@ -44,7 +45,7 @@ export function apiError(code: ApiErrorCode, message?: string, headers: Record<s
 /** Defence in depth: strip secrets from anything we log. */
 export function redact(text: string, env: NodeJS.ProcessEnv = process.env): string {
   let out = text;
-  for (const secret of [env.SCRAPE_CREATORS_API_KEY]) {
+  for (const secret of [scrapeCreatorsKey(env)]) {
     if (secret && secret.length >= 4) out = out.split(secret).join("[redacted]");
   }
   return out.slice(0, 500);

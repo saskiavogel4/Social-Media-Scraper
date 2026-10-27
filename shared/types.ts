@@ -21,4 +21,8 @@ export interface Video {
 export interface HealthResponse {
   ok: boolean;
   apiKeyConfigured: boolean;
+  /** Only when the key is missing: names (never values) of variables that look like it. */
+  lookalikeVariableNames?: string[];
+  deployContext?: string | null;
+  deployId?: string | null;
 }

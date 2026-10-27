@@ -4,6 +4,7 @@
 // project uses. Valid tokens are remembered briefly so a burst of requests costs one check.
 
 import { createHash } from "node:crypto";
+import { scrapeCreatorsKey } from "./env.ts";
 import { DEFAULT_SUPABASE_PUBLISHABLE_KEY, DEFAULT_SUPABASE_URL } from "../../shared/supabaseConfig.ts";
 
 export type AuthResult =
@@ -26,7 +27,7 @@ export function supabaseSettings(env: NodeJS.ProcessEnv = process.env): { url: s
 
 /** True when the Scrape Creators key is set (the value is never exposed). */
 export function serverConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
-  return Boolean(env.SCRAPE_CREATORS_API_KEY);
+  return Boolean(scrapeCreatorsKey(env));
 }
 
 export function bearerToken(req: Request): string | undefined {

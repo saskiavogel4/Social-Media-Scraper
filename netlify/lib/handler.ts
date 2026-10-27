@@ -6,6 +6,7 @@ import type { ApiErrorBody, ApiErrorCode, PlatformChoice, PlatformError } from "
 import { PLATFORMS, type Platform } from "../../shared/types.ts";
 import type { ScFetch } from "./adapters/types.ts";
 import { checkAuth } from "./auth.ts";
+import { scrapeCreatorsKey } from "./env.ts";
 import { getCache } from "./cache.ts";
 import { apiError, errorResponse, json, toPlatformError } from "./http.ts";
 import {
@@ -69,7 +70,7 @@ export function createHandler(
       const params = new URL(req.url).searchParams;
       let client: ScFetch | undefined;
       const sc = () => {
-        client ??= createScFetch(process.env.SCRAPE_CREATORS_API_KEY ?? "", {
+        client ??= createScFetch(scrapeCreatorsKey(), {
           cache: getCache("sc-cache"),
           beforeUpstream: rateLimited ? () => spendCall(who) : undefined,
         });
